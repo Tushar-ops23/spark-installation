@@ -1,0 +1,161 @@
+```
+bash
+sudo apt update -y
+sudo apt upgrade -y
+Step 2 - Install Java JDK
+Following step with Apache Spark is Java-based application. So you need to install Java JDK on your server. You can install it by running the following command:
+
+bash
+Copy code
+sudo apt-get install default-jdk -y
+Once the Java JDK is installed, you can verify the Java version using the following command:
+
+bash
+Copy code
+java --version
+Step 3 - Install Scala
+Then, you also need to install Scala on your server. Install it by running the following command:
+
+bash
+Copy code
+sudo apt-get install scala -y
+After the installation, you can verify the Scala version with the following command:
+
+bash
+Copy code
+scala -version
+Step 4: Reload Bashrc File
+Now, we will reload the bashrc file to apply any changes made.
+
+bash
+Copy code
+source ~/.bashrc
+Step 5 - Install Apache Spark
+First, visit the Apache Spark official download page and download the latest version using the following command:
+
+bash
+Copy code
+wget https://archive.apache.org/dist/spark/spark-3.3.1/spark-3.3.1-bin-hadoop3.tgz
+Once the Apache Spark is downloaded, you can extract the downloaded file with the following command:
+
+bash
+Copy code
+tar -xvzf spark-3.3.1-bin-hadoop3.tgz
+Next, move the extracted directory to the /mnt directory with the following command:
+
+bash
+Copy code
+sudo mv spark-3.3.1-bin-hadoop3 /mnt/spark
+Step 6 - Start Apache Spark
+In this step, you will need to edit the .bashrc file and define the Apache Spark path. Edit it with the following command:
+
+bash
+Copy code
+nano ~/.bashrc
+Add the following lines:
+
+bash
+Copy code
+export SPARK_HOME=/mnt/spark
+export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
+Save and close the file then reload the environment variable with the following command.
+
+bash
+Copy code
+source ~/.bashrc
+Next, start the Apache Spark with the following command:
+
+bash
+Copy code
+start-master.sh
+If you want to stop Apache Spark, run the following command:
+
+bash
+Copy code
+stop-master.sh
+Step 7 - Access Apache Spark Master
+By default, Apache Spark listens on port 8080. Please verify the listening port using the following command:
+
+bash
+Copy code
+ss -tpln | grep 8080
+Now, open your web browser and access the Apache Spark master node using the URL http://your-server-ip:8080. You should see the Apache Spark master dashboard.
+
+Step 8 - Access Apache Spark Worker Node
+Start the Apache Spark Worker service with the following command:
+
+bash
+Copy code
+start-worker.sh spark://your-server-ip:7077
+Now, refresh the Apache Spark master node screen. You should see the added Worker node.
+
+If you want to stop the Worker, run the following command:
+
+bash
+Copy code
+stop-worker.sh
+You can also see the Apache Spark logs using the following command:
+
+bash
+Copy code
+tail -f /mnt/spark/logs/spark-root-org.apache.spark.deploy.worker.Worker-1-spark.out
+Step 9 - Create a Systemd File for Apache Spark
+Create a systemd service file for Apache Spark Master using the following command:
+
+bash
+Copy code
+sudo nano /etc/systemd/system/spark-master.service
+Add the following configurations:
+
+makefile
+Copy code
+[Unit]
+Description=Apache Spark Master
+After=network.target
+
+[Service]
+Type=forking
+User=root
+Group=root
+ExecStart=/mnt/spark/sbin/start-master.sh
+ExecStop=/mnt/spark/sbin/stop-master.sh
+
+[Install]
+WantedBy=multi-user.target
+Save and close the file after you finished. Then, create a systemd service file for Apache Worker using the following command:
+
+bash
+Copy code
+sudo nano /etc/systemd/system/spark-worker.service
+Add the following configurations:
+
+makefile
+Copy code
+[Unit]
+
+Description=Apache Spark Worker
+After=network.target
+
+[Service]
+Type=forking
+User=root
+Group=root
+ExecStart=/mnt/spark/sbin/start-slave.sh spark://your-server-ip:7077
+ExecStop=/mnt/spark/sbin/stop-slave.sh
+
+[Install]
+WantedBy=multi-user.target
+Save and close the file. Then, reload the systemd daemon to apply the changes.
+
+bash
+Copy code
+sudo systemctl daemon-reload
+Next, start both Spark Master and Worker service and enable them to start at system reboot:
+
+bash
+Copy code
+sudo systemctl start spark-master
+sudo systemctl enable spark-master
+sudo systemctl start spark-worker
+sudo systemctl enable spark-worker
+```
